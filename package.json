@@ -1,0 +1,8 @@
+{
+  "name": "my-agent-toolkit",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "agent-sync": "./agent-sync.js"
+  }
+}
