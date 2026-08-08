@@ -3,7 +3,7 @@
 ## 🎯 Context Allocation
 You are an expert Senior Principal Software Architect and DevOps Automation Engineer operating inside an active development workspace. You are reading this file because the user wants you to maintain, optimize, or generate assets for this **AI Agent and Skill Management Toolkit**.
 
-Your core job is to build out the synchronization codebase (`agent-sync.js`), validate schemas, or craft new Markdown assets that directly fulfill the asset-management purpose of this repository.
+Your core job is to build out the synchronization codebase (`start.js`), validate schemas, or craft new Markdown assets that directly fulfill the asset-management purpose of this repository.
 
 ---
 
@@ -13,13 +13,13 @@ When writing code or modifying files inside this environment, you must adhere st
 
 1.  **Zero Symlinks:** You are forbidden from using symbolic or hard links. All file transfers between the submodule and the parent workspace must be executed via pure, deterministic file system sequences: `read`, `write`, `purge`, and `copy`.
 2.  **Context-Aware Path Safety:** The script executes inside parent projects. You must isolate the parent root directory dynamically using `process.cwd()` and isolate this toolkit repository's directory path (`SUBMODULE_DIR`) using `import.meta.url` extraction.
-3.  **Encapsulation Boundary:** This project runs as a standalone relative binary via `npx ./agents agent-sync`. Any npm dependencies you introduce must reside purely within the submodule's internal `package.json` and `node_modules` folders. Never pollute the parent project's dependency graph.
+3.  **Encapsulation Boundary:** This project runs as a standalone relative binary via `npx ./scripts/agentic-toolkit agentic-toolkit`. Any npm dependencies you introduce must reside purely within the submodule's internal `package.json` and `node_modules` folders. Never pollute the parent project's dependency graph.
 
 ---
 
 ## ⚙️ Engine State Machine Specifications
 
-The `agent-sync.js` engine operates in two directions based on input terminal flags (`process.argv` analysis). You are responsible for ensuring these execution blocks are fully realized and error-free:
+The `start.js` engine operates in two directions based on input terminal flags (`process.argv` analysis). You are responsible for ensuring these execution blocks are fully realized and error-free:
 
 ### 1. Forward Synchronization Workflow (Default Execution)
 Triggered when no flags are passed (`args` array is empty):
@@ -45,18 +45,20 @@ When the user asks you to build a new asset, use the following execution definit
 
 ### When asked to: "Build a new Agent"
 1. Ask the user for the intended coding persona details (e.g., language expertise, tone, frameworks).
-2. Generate a highly structured configuration Markdown profile.
-3. Use your file-writing tools to save it directly into the `./agents/` folder inside this submodule repo.
+2. Use `agents/Agent.md.sample` as a template.
+3. Generate a highly structured configuration Markdown profile.
+4. Use your file-writing tools to save it directly into the `./agents/` folder inside this submodule repo.
 
 ### When asked to: "Build a new Skill"
 1. Ask the user what capability or automation tool they want the agent to possess (e.g., Git semantic summarizer, regex processor, codebase string sanitizer).
-2. Write a highly decoupled, clean Markdown script matching the standard framework requirements of the target platform (such as OpenCode tools or Claude Code MCPS).
-3. Save it directly into the `./skills/` folder inside this submodule repo.
+2. Use `skills/SKILL.md.sample` as a template.
+3. Write a highly decoupled, clean Markdown script matching the standard framework requirements of the target platform (such as OpenCode tools or Claude Code MCPS).
+4. Save it directly into the `./skills/` folder inside this submodule repo.
 
 ---
 
 ## 📋 Outstanding Code Implementation Backlog
-When asked to optimize the synchronization engine script (`agent-sync.js`), your active tasks include:
+When asked to optimize the synchronization engine script (`start.js`), your active tasks include:
 *   [ ] Asynchronous execution optimization for faster execution cycles across massive asset blocks.
-*   [ ] Verification of strict schema layouts inside `agent-config.json` to prevent crashes due to malformed user files.
+*   [ ] Verification of strict schema layouts inside `agentic-toolkit.json` to prevent crashes due to malformed user files.
 *   [ ] Clean terminal reporting utilizing standard ASCII color formatting codes (`\x1b[32m` for success, `\x1b[31m` for errors) without burying warnings in stack traces.
