@@ -32,8 +32,7 @@ Create `agentic-toolkit.json` in your project root:
 
 ```json
 {
-  "extends": "opencode.json",
-  "active_tool": "opencode"
+  "targets": ["opencode"]
 }
 ```
 
@@ -45,8 +44,7 @@ Add to your `package.json`:
 "scripts": {
   "agentic-toolkit": "npx ./scripts/agentic-toolkit agentic-toolkit --config ./agentic-toolkit.json",
   "agent:sync": "npm run agentic-toolkit",
-  "agent:save": "npm run agentic-toolkit -- --save",
-  "agent:save-new": "npm run agentic-toolkit -- --saveIfNew"
+  "agent:save": "npm run agentic-toolkit -- --save"
 }
 ```
 
@@ -64,7 +62,6 @@ npm run agent:sync
 |---------|-------------|
 | `npm run agent:sync` | Sync agents/skills from submodule to target directory |
 | `npm run agent:save` | Save changes FROM target directory BACK to submodule |
-| `npm run agent:save-new` | Save only NEW files from target directory to submodule |
 
 ---
 
@@ -74,8 +71,30 @@ npm run agent:sync
 
 | Field | Description |
 |-------|-------------|
-| `active_tool` | Target platform: `opencode`, `claude`, or `standard-agents` |
-| `extends` | Optional: Merge with native config file (e.g., `opencode.json`) |
+| `targets` | Array of target platforms: `opencode`, `claude`, or `standard-agents` |
+
+### Example Configurations
+
+Sync to OpenCode only:
+```json
+{
+  "targets": ["opencode"]
+}
+```
+
+Sync to both OpenCode and Claude:
+```json
+{
+  "targets": ["opencode", "claude"]
+}
+```
+
+Sync to all platforms:
+```json
+{
+  "targets": ["opencode", "claude", "standard-agents"]
+}
+```
 
 ### Auto-Discovery
 
@@ -124,15 +143,11 @@ scripts/agentic-toolkit/
 
 ### Agent Description Format
 
-Every agent description MUST include:
-
-```yaml
-description: >
-  WHAT: [What this agent does]
-  WHEN: [When to call it]
-  DONT: [What NOT to use it for]
-  RETURNS: [What it returns - subagents only]
-```
+Every agent description MUST be a free-flowing paragraph that includes:
+- What this agent does (its core capability)
+- When to call this agent (trigger conditions)
+- What NOT to use it for (exclusions)
+- What it returns (for subagents, omit for primary agents)
 
 ---
 
@@ -200,4 +215,4 @@ npm run agent:save
 
 ### Wrong target directory
 
-Check your `agentic-toolkit.json` `active_tool` value, or let auto-discovery work by removing the config file.
+Check your `agentic-toolkit.json` `targets` value, or let auto-discovery work by removing the config file.

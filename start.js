@@ -17,36 +17,32 @@ const TOOL_MAP = {
   'standard-agents': '.agents'
 };
 
-// Phase 1 & 2: Configuration Resolution
+// Configuration Resolution
 function loadConfig(configPath) {
   const parentConfigPath = configPath || path.join(PARENT_PROJECT_ROOT, DEFAULT_CONFIG_NAME);
-  let config = { active_tool: 'standard-agents' };
+  let config = { targets: ['standard-agents'] };
 
   if (fs.existsSync(parentConfigPath)) {
     const parentConfig = JSON.parse(fs.readFileSync(parentConfigPath, 'utf8'));
     
-    if (parentConfig.extends && fs.existsSync(path.join(PARENT_PROJECT_ROOT, parentConfig.extends))) {
-      const baseConfig = JSON.parse(fs.readFileSync(path.join(PARENT_PROJECT_ROOT, parentConfig.extends), 'utf8'));
-      config = { ...baseConfig, ...parentConfig, ...baseConfig.custom };
-    } else {
+    if (parentConfig.targets && Array.isArray(parentConfig.targets)) {
       config = parentConfig;
     }
   } else {
     // Fallback Discovery
     if (fs.existsSync(path.join(PARENT_PROJECT_ROOT, 'opencode.json'))) {
-      config.active_tool = 'opencode';
+      config.targets = ['opencode'];
     } else if (fs.existsSync(path.join(PARENT_PROJECT_ROOT, 'claude.json')) || fs.existsSync(path.join(PARENT_PROJECT_ROOT, '.clauderc'))) {
-      config.active_tool = 'claude';
+      config.targets = ['claude'];
     }
   }
 
   return config;
 }
 
-// Phase 4: State Purge & Execution Layer
-function syncToTool(config) {
-  const targetTool = TOOL_MAP[config.active_tool] || TOOL_MAP['standard-agents'];
-  const targetDir = path.join(PARENT_PROJECT_ROOT, targetTool);
+// Sync to Target Directory
+function syncToTarget(target) {
+  const targetDir = path.join(PARENT_PROJECT_ROOT, TOOL_MAP[target] || TOOL_MAP['standard-agents']);
 
   if (fs.existsSync(targetDir)) {
     fs.rmSync(targetDir, { recursive: true, force: true });
@@ -55,7 +51,6 @@ function syncToTool(config) {
   fs.mkdirSync(path.join(targetDir, 'agents'), { recursive: true });
   fs.mkdirSync(path.join(targetDir, 'skills'), { recursive: true });
 
-  // Bulk-copy from submodule
   const submoduleAgents = path.join(SUBMODULE_DIR, 'agents');
   const submoduleSkills = path.join(SUBMODULE_DIR, 'skills');
 
@@ -67,19 +62,16 @@ function syncToTool(config) {
     fs.cpSync(submoduleSkills, path.join(targetDir, 'skills'), { recursive: true });
   }
 
-  console.log(`Synced toolkit to ${targetTool}`);
+  return targetDir;
 }
 
-// Phase 5: State Inversion Flags
-function saveFromTool(args, configPath) {
-  const config = loadConfig(configPath);
-  const targetTool = TOOL_MAP[config.active_tool] || TOOL_MAP['standard-agents'];
-  const targetDir = path.join(PARENT_PROJECT_ROOT, targetTool);
-  const submoduleDir = SUBMODULE_DIR;
+// Sync from Target Directory (Reverse)
+function saveFromTarget(target) {
+  const targetDir = path.join(PARENT_PROJECT_ROOT, TOOL_MAP[target] || TOOL_MAP['standard-agents']);
 
   if (!fs.existsSync(targetDir)) {
-    console.log(`No ${targetTool} directory found.`);
-    return;
+    console.log(`  Skipping ${target} - directory not found`);
+    return 0;
   }
 
   const scanDirs = ['agents', 'skills'];
@@ -87,24 +79,15 @@ function saveFromTool(args, configPath) {
 
   for (const dir of scanDirs) {
     const source = path.join(targetDir, dir);
-    const destination = path.join(submoduleDir, dir);
+    const destination = path.join(SUBMODULE_DIR, dir);
 
     if (!fs.existsSync(source)) continue;
 
-    fs.cpSync(source, destination, { 
-      recursive: true,
-      filter: (src) => {
-        if (args.includes('--saveIfNew')) {
-          const destPath = path.join(destination, path.relative(source, src));
-          return !fs.existsSync(destPath);
-        }
-        return true;
-      }
-    });
+    fs.cpSync(source, destination, { recursive: true });
     copied++;
   }
 
-  console.log(`Saved ${copied} directories from ${targetTool} back to toolkit.`);
+  return copied;
 }
 
 // Main Execution
@@ -114,16 +97,30 @@ const args = process.argv.slice(2);
 const configIndex = args.indexOf('--config');
 const customConfigPath = configIndex !== -1 ? args[configIndex + 1] : null;
 
-// Filter out --config and its value from args
-const filteredArgs = args.filter((arg, i) => {
-  if (arg === '--config') return false;
-  if (i === configIndex + 1 && customConfigPath) return false;
-  return true;
-});
+const isSave = args.includes('--save');
+const config = loadConfig(customConfigPath);
+const targets = config.targets || ['standard-agents'];
 
-if (filteredArgs.includes('--save') || filteredArgs.includes('--saveIfNew')) {
-  saveFromTool(filteredArgs, customConfigPath);
+console.log(`\nAgentic Toolkit - ${isSave ? 'Saving' : 'Syncing'} to ${targets.length} target(s)\n`);
+
+if (isSave) {
+  // Reverse sync: save from targets back to submodule
+  for (const target of targets) {
+    const dir = TOOL_MAP[target] || TOOL_MAP['standard-agents'];
+    console.log(`  Saving from ${dir}...`);
+    const count = saveFromTarget(target);
+    if (count > 0) {
+      console.log(`    Saved ${count} director${count === 1 ? 'y' : 'ies'}`);
+    }
+  }
 } else {
-  const config = loadConfig(customConfigPath);
-  syncToTool(config);
+  // Forward sync: sync from submodule to targets
+  for (const target of targets) {
+    const dir = TOOL_MAP[target] || TOOL_MAP['standard-agents'];
+    console.log(`  Syncing to ${dir}...`);
+    syncToTarget(target);
+    console.log(`    Done`);
+  }
 }
+
+console.log('\nDone.\n');

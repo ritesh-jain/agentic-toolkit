@@ -100,10 +100,8 @@ Write the skill file to `skills/[SkillName].md` with:
 ---
 name: [skill-name]
 description: >
-  WHAT: [What this skill automates]
-  WHEN: [When to invoke this skill]
-  INPUT: [What data this skill expects]
-  OUTPUT: [What this skill produces]
+  [Free-flowing paragraph that includes: what this skill does, when to
+  invoke it, what input it expects, and what output it produces]
 ---
 
 [Detailed implementation instructions]
@@ -113,7 +111,7 @@ description: >
 
 Ensure the skill file:
 - Has valid YAML frontmatter
-- Includes all required description sections
+- Description includes all required information in a natural paragraph
 - Has clear, step-by-step implementation instructions
 - Includes input/output examples
 
@@ -139,7 +137,18 @@ The `start.js` engine supports these CLI flags:
 |------|-------------|
 | `--config <path>` | Use a custom config file (default: `agentic-toolkit.json`) |
 | `--save` | Sync FROM target dir BACK TO submodule (reverse sync) |
-| `--saveIfNew` | Sync only NEW files from target dir to submodule |
+
+### Configuration File (`agentic-toolkit.json`)
+
+```json
+{
+  "targets": ["opencode", "claude"]
+}
+```
+
+| Field | Description | Values |
+|-------|-------------|--------|
+| `targets` | Array of target platforms | `opencode`, `claude`, `standard-agents` |
 
 ---
 
@@ -150,7 +159,7 @@ The `start.js` engine supports these CLI flags:
 | Field | Description | Values |
 |-------|-------------|--------|
 | `name` | Agent identifier | Lowercase letters and hyphens |
-| `description` | When to delegate | Must include WHAT, WHEN, DONT, RETURNS |
+| `description` | When to delegate | Free-flowing paragraph with what, when, dont, returns |
 | `model` | Model to use | `inherit`, `sonnet`, `opus`, `haiku`, `provider/model-id` |
 | `color` | Display color | Platform-specific values |
 
