@@ -153,17 +153,45 @@ Every agent description MUST be a free-flowing paragraph that includes:
 
 ## Creating New Skills
 
-1. Copy the template:
+1. Create a directory for the skill:
    ```bash
-   cp skills/SKILL.md.sample skills/MySkill.md
+   mkdir -p skills/my-skill
    ```
 
-2. Edit the new file with your skill's configuration
+2. Copy the template:
+   ```bash
+   cp skills/SKILL.md.sample skills/my-skill/SKILL.md
+   ```
 
-3. Run sync:
+3. Edit the new file with your skill's configuration
+
+4. Run sync:
    ```bash
    npm run agent:sync
    ```
+
+### Skill File Structure
+
+Skills must be placed in a directory with `SKILL.md` as the entrypoint:
+
+```
+skills/
+└── my-skill/
+    ├── SKILL.md           # Main instructions (required)
+    ├── template.md        # Optional template
+    ├── examples/
+    │   └── sample.md      # Optional examples
+    └── scripts/
+        └── helper.sh      # Optional scripts
+```
+
+### Skill Description Format
+
+Every skill description MUST be a free-flowing paragraph that includes:
+- What this skill does (its purpose)
+- When to invoke it (trigger conditions)
+- What NOT to use it for (exclusions)
+- What it returns (output structure)
 
 ---
 

@@ -94,24 +94,50 @@ Read `skills/SKILL.md.sample` to understand the required format.
 
 ### Step 3: Create the Skill
 
-Write the skill file to `skills/[SkillName].md` with:
+Write the skill file to `skills/[SkillName]/SKILL.md` with:
 
 ```yaml
 ---
 name: [skill-name]
 description: >
   [Free-flowing paragraph that includes: what this skill does, when to
-  invoke it, what input it expects, and what output it produces]
+  invoke it, what NOT to use it for, and what it returns]
+license: MIT
+compatibility: [platform]
+metadata:
+  audience: [target audience]
+  workflow: [workflow type]
 ---
 
-[Detailed implementation instructions]
+## What I do
+
+[Clear description of skill purpose]
+
+## When to use me
+
+[Specific trigger conditions]
+
+## Instructions
+
+### Phase 1: [First Step]
+
+1. [Detailed instruction]
+2. [Detailed instruction]
+
+## Output Format
+
+[Expected output structure]
 ```
 
 ### Step 4: Validate
 
 Ensure the skill file:
+- Is named `SKILL.md` (all caps)
+- Is placed in a directory matching the skill name
 - Has valid YAML frontmatter
-- Description includes all required information in a natural paragraph
+- `name` matches directory name (required for OpenCode)
+- `description` is 1-1024 characters (required for OpenCode)
+- Description includes all four pieces of information in a natural paragraph
 - Has clear, step-by-step implementation instructions
 - Includes input/output examples
 
