@@ -10,6 +10,7 @@ const __dirname = path.dirname(__filename);
 // Path Resolution
 const PARENT_PROJECT_ROOT = process.cwd();
 const SUBMODULE_DIR = __dirname;
+const DEFAULT_CONFIG_NAME = 'agentic-toolkit.json';
 const TOOL_MAP = {
   'opencode': '.opencode',
   'claude': '.claude',
@@ -17,8 +18,8 @@ const TOOL_MAP = {
 };
 
 // Phase 1 & 2: Configuration Resolution
-function loadConfig() {
-  const parentConfigPath = path.join(PARENT_PROJECT_ROOT, 'agent-config.json');
+function loadConfig(configPath) {
+  const parentConfigPath = configPath || path.join(PARENT_PROJECT_ROOT, DEFAULT_CONFIG_NAME);
   let config = { active_tool: 'standard-agents' };
 
   if (fs.existsSync(parentConfigPath)) {
@@ -70,8 +71,8 @@ function syncToTool(config) {
 }
 
 // Phase 5: State Inversion Flags
-function saveFromTool(args) {
-  const config = loadConfig();
+function saveFromTool(args, configPath) {
+  const config = loadConfig(configPath);
   const targetTool = TOOL_MAP[config.active_tool] || TOOL_MAP['standard-agents'];
   const targetDir = path.join(PARENT_PROJECT_ROOT, targetTool);
   const submoduleDir = SUBMODULE_DIR;
@@ -109,9 +110,20 @@ function saveFromTool(args) {
 // Main Execution
 const args = process.argv.slice(2);
 
-if (args.includes('--save') || args.includes('--saveIfNew')) {
-  saveFromTool(args);
+// Parse --config flag
+const configIndex = args.indexOf('--config');
+const customConfigPath = configIndex !== -1 ? args[configIndex + 1] : null;
+
+// Filter out --config and its value from args
+const filteredArgs = args.filter((arg, i) => {
+  if (arg === '--config') return false;
+  if (i === configIndex + 1 && customConfigPath) return false;
+  return true;
+});
+
+if (filteredArgs.includes('--save') || filteredArgs.includes('--saveIfNew')) {
+  saveFromTool(filteredArgs, customConfigPath);
 } else {
-  const config = loadConfig();
+  const config = loadConfig(customConfigPath);
   syncToTool(config);
 }
