@@ -30,7 +30,7 @@ Ask the user for:
 - **Exclusions** (what NOT to use it for)
 - **Input format** (what data it expects)
 - **Output format** (what it produces)
-- **Platform compatibility** (which AI platforms to support)
+- **Target platforms** (claude, opencode, or both)
 
 ### Step 2: Create Directory Structure
 
@@ -56,6 +56,12 @@ Read [frontmatter.md](references/frontmatter.md) for the complete field referenc
 - Platform-specific requirements (Specification, Claude, OpenCode)
 - Description format requirements with examples
 - Dynamic context and string substitutions
+
+Also read [SKILL_TEMPLATE.md](references/SKILL_TEMPLATE.md) for the canonical skill format.
+
+Based on the target platforms:
+- **Single target** (`claude` or `opencode`): Include only fields for that platform
+- **Multiple targets**: Include all fields for all targets (superset)
 
 Follow the reference to select the appropriate fields and write the frontmatter for your skill.
 

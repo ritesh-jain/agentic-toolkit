@@ -118,6 +118,8 @@ Comma-separated tool allowlist.
 tools: Read, Glob, Grep, Bash
 ```
 
+**⚠️ Cross-Platform Note**: Include this field only when targeting Claude. OpenCode does not support `tools` and will error if present.
+
 ### `disallowedTools`
 
 Comma-separated tool denylist.

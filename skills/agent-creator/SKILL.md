@@ -5,12 +5,12 @@ description: >
   create a new agent, add a new AI persona, or build specialized
   assistants for specific tasks. Returns a complete agent file with
   proper frontmatter, system prompt, and cross-platform compatibility
-  following Agent.md.sample conventions.
+  following the AGENT_TEMPLATE.md conventions.
 ---
 
 ## What I Do
 
-I create new agent definitions that work across multiple AI platforms. I handle the entire workflow from requirements gathering to file creation, ensuring all specification fields are included and the system prompt is effective.
+I create new agent definitions that work across multiple AI platforms (Claude and OpenCode). I handle the entire workflow from requirements gathering to file creation, ensuring all specification fields are included and the system prompt is effective.
 
 ## When to Use Me
 
@@ -32,19 +32,21 @@ Ask the user for:
 - **Expected output** (what it returns)
 - **Technical domain** (languages, frameworks, specializations)
 - **Permission level** (read-only, full access, etc.)
-- **Platform compatibility** (which AI platforms to support)
+- **Target platforms** (claude, opencode, or both)
 
 ### Step 2: Write Agent Frontmatter
 
 The agent file must contain YAML frontmatter followed by a system prompt.
 
-Read [frontmatter.md](references/frontmatter.md) for the complete field reference, including:
-- Cross-platform fields (name, description, model, color)
-- Claude-specific fields (tools, permissions, memory, etc.)
-- OpenCode-specific fields (mode, temperature, steps, etc.)
-- Permission system configuration
+Read [AGENT_TEMPLATE.md](references/AGENT_TEMPLATE.md) for the complete agent format with all fields documented.
 
-Follow the reference to select the appropriate fields and write the frontmatter for your agent.
+Read [frontmatter.md](references/frontmatter.md) for detailed field constraints and validation rules.
+
+Based on the target platforms:
+- **Single target** (`claude` or `opencode`): Include only fields for that platform
+- **Multiple targets**: Include all fields for all targets (superset)
+
+Follow the template to write the frontmatter for your agent.
 
 ### Step 3: Write System Prompt
 
@@ -60,11 +62,7 @@ Follow the reference to write a clear, actionable system prompt for your agent.
 
 ### Step 4: Validate
 
-Read [validation.md](references/validation.md) for the complete validation checklist, including:
-- File structure requirements
-- Frontmatter field constraints with valid/invalid examples
-- System prompt quality rules
-- Platform-specific validation rules
+Read [validation.md](references/validation.md) for the complete validation checklist.
 
 Run through the checklist to ensure your agent follows all conventions.
 
