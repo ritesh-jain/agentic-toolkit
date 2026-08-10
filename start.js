@@ -14,13 +14,72 @@ const DEFAULT_CONFIG_NAME = 'agentic-toolkit.json';
 const TOOL_MAP = {
   'opencode': '.opencode',
   'claude': '.claude',
-  'standard-agents': '.agents'
+  'agents': '.agents'
 };
+
+// Platform-specific field removal rules
+// Master files are superset; sync strips incompatible fields per target
+const STRIP_FIELDS = {
+  'opencode': ['tools', 'disallowedTools', 'permissionMode', 'maxTurns', 'skills', 'mcpServers', 'hooks', 'memory', 'background', 'effort', 'isolation', 'initialPrompt'],
+  'claude': ['permission', 'mode', 'temperature', 'steps', 'disable', 'prompt', 'hidden', 'top_p', 'reasoningEffort', 'textVerbosity']
+};
+
+// Transform agent frontmatter for target platform
+function transformAgentContent(content, target) {
+  const fieldsToStrip = STRIP_FIELDS[target];
+  if (!fieldsToStrip || fieldsToStrip.length === 0) return content;
+
+  // Match YAML frontmatter between --- delimiters
+  const frontmatterRegex = /^(---\n)([\s\S]*?)(\n---)/;
+  const match = content.match(frontmatterRegex);
+
+  if (!match) return content;
+
+  const [, opening, frontmatter, closing] = match;
+  const lines = frontmatter.split('\n');
+  const transformedLines = [];
+  let skipBlock = false;
+  let indent = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const fieldMatch = line.match(/^(\s*)(\w[\w-]*):/);
+
+    if (fieldMatch) {
+      const currentIndent = fieldMatch[1].length;
+      const fieldName = fieldMatch[2];
+
+      // If we were skipping a block, check if we've exited it
+      if (skipBlock) {
+        if (currentIndent <= indent) {
+          skipBlock = false;
+        } else {
+          continue; // Still inside the block we're skipping
+        }
+      }
+
+      // Check if this field should be stripped
+      if (fieldsToStrip.includes(fieldName)) {
+        skipBlock = true;
+        indent = currentIndent;
+        continue;
+      }
+    } else if (skipBlock) {
+      // Continuation of a block we're skipping (e.g., multi-line value)
+      continue;
+    }
+
+    transformedLines.push(line);
+  }
+
+  const transformedFrontmatter = transformedLines.join('\n');
+  return content.replace(frontmatterRegex, `${opening}${transformedFrontmatter}${closing}`);
+}
 
 // Configuration Resolution
 function loadConfig(configPath) {
   const parentConfigPath = configPath || path.join(PARENT_PROJECT_ROOT, DEFAULT_CONFIG_NAME);
-  let config = { targets: ['standard-agents'] };
+  let config = { targets: ['agents'] };
 
   if (fs.existsSync(parentConfigPath)) {
     const parentConfig = JSON.parse(fs.readFileSync(parentConfigPath, 'utf8'));
@@ -42,7 +101,7 @@ function loadConfig(configPath) {
 
 // Sync to Target Directory
 function syncToTarget(target) {
-  const targetDir = path.join(PARENT_PROJECT_ROOT, TOOL_MAP[target] || TOOL_MAP['standard-agents']);
+  const targetDir = path.join(PARENT_PROJECT_ROOT, TOOL_MAP[target]);
 
   if (fs.existsSync(targetDir)) {
     fs.rmSync(targetDir, { recursive: true, force: true });
@@ -54,10 +113,19 @@ function syncToTarget(target) {
   const submoduleAgents = path.join(SUBMODULE_DIR, 'agents');
   const submoduleSkills = path.join(SUBMODULE_DIR, 'skills');
 
+  // Sync agents with transformation
   if (fs.existsSync(submoduleAgents)) {
-    fs.cpSync(submoduleAgents, path.join(targetDir, 'agents'), { recursive: true });
+    const agentFiles = fs.readdirSync(submoduleAgents).filter(f => f.endsWith('.md'));
+    for (const file of agentFiles) {
+      const srcPath = path.join(submoduleAgents, file);
+      const destPath = path.join(targetDir, 'agents', file);
+      const content = fs.readFileSync(srcPath, 'utf8');
+      const transformed = transformAgentContent(content, target);
+      fs.writeFileSync(destPath, transformed);
+    }
   }
 
+  // Sync skills (no transformation needed)
   if (fs.existsSync(submoduleSkills)) {
     fs.cpSync(submoduleSkills, path.join(targetDir, 'skills'), { recursive: true });
   }
@@ -67,7 +135,7 @@ function syncToTarget(target) {
 
 // Sync from Target Directory (Reverse)
 function saveFromTarget(target) {
-  const targetDir = path.join(PARENT_PROJECT_ROOT, TOOL_MAP[target] || TOOL_MAP['standard-agents']);
+  const targetDir = path.join(PARENT_PROJECT_ROOT, TOOL_MAP[target]);
 
   if (!fs.existsSync(targetDir)) {
     console.log(`  Skipping ${target} - directory not found`);
@@ -99,14 +167,14 @@ const customConfigPath = configIndex !== -1 ? args[configIndex + 1] : null;
 
 const isSave = args.includes('--save');
 const config = loadConfig(customConfigPath);
-const targets = config.targets || ['standard-agents'];
+const targets = config.targets || ['agents'];
 
 console.log(`\nAgentic Toolkit - ${isSave ? 'Saving' : 'Syncing'} to ${targets.length} target(s)\n`);
 
 if (isSave) {
   // Reverse sync: save from targets back to submodule
   for (const target of targets) {
-    const dir = TOOL_MAP[target] || TOOL_MAP['standard-agents'];
+    const dir = TOOL_MAP[target];
     console.log(`  Saving from ${dir}...`);
     const count = saveFromTarget(target);
     if (count > 0) {
@@ -116,7 +184,7 @@ if (isSave) {
 } else {
   // Forward sync: sync from submodule to targets
   for (const target of targets) {
-    const dir = TOOL_MAP[target] || TOOL_MAP['standard-agents'];
+    const dir = TOOL_MAP[target];
     console.log(`  Syncing to ${dir}...`);
     syncToTarget(target);
     console.log(`    Done`);

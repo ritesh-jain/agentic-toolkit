@@ -71,7 +71,7 @@ npm run agent:sync
 
 | Field | Description |
 |-------|-------------|
-| `targets` | Array of target platforms: `opencode`, `claude`, or `standard-agents` |
+| `targets` | Array of target platforms: `opencode`, `claude`, or `agents` |
 
 ### Example Configurations
 
@@ -92,7 +92,7 @@ Sync to both OpenCode and Claude:
 Sync to all platforms:
 ```json
 {
-  "targets": ["opencode", "claude", "standard-agents"]
+  "targets": ["opencode", "claude", "agents"]
 }
 ```
 

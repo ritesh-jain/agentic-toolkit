@@ -174,7 +174,7 @@ The `start.js` engine supports these CLI flags:
 
 | Field | Description | Values |
 |-------|-------------|--------|
-| `targets` | Array of target platforms | `opencode`, `claude`, `standard-agents` |
+| `targets` | Array of target platforms | `opencode`, `claude`, `agents` |
 
 ---
 
